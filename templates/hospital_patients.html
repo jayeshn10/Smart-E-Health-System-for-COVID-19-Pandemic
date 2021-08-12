@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{%block blockstyle%}
+<style type="text/css">
+body {
+    background: #eee;
+}
+
+.main-body {
+    padding: 15px;
+}
+
+.table-wrapper {
+    width: 100%;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+}
+
+.table-title {
+    padding-bottom: 10px;
+    margin: 0 0 10px;
+}
+
+.table-title h2 {
+    margin: 6px 0 0;
+    font-size: 22px;
+}
+
+.table-title .add-new {
+    float: right;
+    height: 30px;
+    font-weight: bold;
+    font-size: 12px;
+    text-shadow: none;
+    min-width: 100px;
+    border-radius: 50px;
+    line-height: 13px;
+}
+
+.table-title .add-new i {
+    margin-right: 4px;
+}
+
+table.table {
+    table-layout: fixed;
+}
+
+table.table tr th,
+table.table tr td {
+    border-color: #e9e9e9;
+}
+
+
+table.table th:last-child {
+    width: 100px;
+}
+
+
+table.table .form-control {
+    height: 32px;
+    line-height: 32px;
+    box-shadow: none;
+    border-radius: 2px;
+}
+
+table.table .form-control.error {
+    border-color: #f50000;
+}
+</style>
+{%endblock%}
+{%block maincontent%}
+<div class="container-fluid">
+    <div class="main-body">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="main-breadcrumb ">
+            <ol class="breadcrumb b-bg-c">
+                <li class="breadcrumb-item"><a href="{%url 'index'%}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Hospital Patients</li>
+            </ol>
+        </nav>
+        <!-- /Breadcrumb -->
+        <div class="table-wrapper">
+            <div class="table-title">
+                <div class="row">
+                    <div class="col-sm-8">
+                        <h2>Hospital Patients <b>Details</b></h2>
+                    </div>
+                    <div class="col-sm-4">
+                        {%if request.user.is_staff or request.user.is_hospital_staff %}
+                        <a class="btn btn-info add-new" href="{%url 'add-hospital-patient'%}"><i class="fa fa-plus"></i>Add New</a>
+                        {%endif%}
+                    </div>
+                </div>
+            </div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Sr.No</th>
+                        <th>Username</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                        <th>View</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for user_patient in users_patient %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{user_patient.username}}</td>
+                        <td>{{user_patient.first_name}} {{user_patient.last_name}}</td>
+                        <td>{{user_patient.email}}</td>
+                        <td>{{user_patient.user_mobile}}</td>
+                        <td>
+                            <a class="btn-sm btn-info" href="{%url 'user_profile' user_patient.id %}">View</a>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%endblock%}

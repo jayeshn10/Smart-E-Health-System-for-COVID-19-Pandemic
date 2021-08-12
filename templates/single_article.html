@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{%load static%}
+{%block blockstyle%}
+<style type="text/css">
+body {
+    background: #eee;
+
+}
+
+.main-body {
+    padding: 15px;
+}
+</style>
+{%endblock%}
+{%block maincontent%}
+<div class="container-fluid">
+    <div class="main-body">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="main-breadcrumb ">
+            <ol class="breadcrumb b-bg-c">
+                <li class="breadcrumb-item"><a href="{%url 'index'%}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{%url 'articles'%}">Articles</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{blog.blog_slug}}</li>
+            </ol>
+        </nav>
+        <header>
+            <h2>Health Article</h2>
+        </header>
+        <!-- /Breadcrumb -->
+        <div class="card">
+            <div style="padding: 8px;">
+            <img class="card-img-top" src="{{blog.blog_img.url}}" alt="Card image cap" style="object-fit:cover; width:100%; height:400px; ">
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{blog.blog_title}}</h5>
+                <p class="card-text"><small class="text-muted">{{blog.blog_pubdate}}</small></p>
+                <p class="card-text">{{blog.blog_desc}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}

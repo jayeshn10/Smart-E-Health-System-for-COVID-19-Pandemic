@@ -1,0 +1,510 @@
+{% extends "base.html" %}
+{%block blockstyle%}
+<style type="text/css">
+body {
+    color: #1a202c;
+    text-align: left;
+    background-color: #e2e8f0;
+}
+
+.main-body {
+    padding: 15px;
+}
+
+.card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px 0 rgba(0, 0, 0, .06);
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 0 solid rgba(0, 0, 0, .125);
+    border-radius: .25rem;
+}
+
+.card-body {
+    flex: 1 1 auto;
+    min-height: 1px;
+    padding: 1rem;
+}
+
+.gutters-sm {
+    margin-right: -8px;
+    margin-left: -8px;
+}
+
+.gutters-sm>.col,
+.gutters-sm>[class*=col-] {
+    padding-right: 8px;
+    padding-left: 8px;
+}
+
+.mb-3,
+.my-3 {
+    margin-bottom: 1rem !important;
+}
+
+.bg-gray-300 {
+    background-color: #e2e8f0;
+}
+
+.h-100 {
+    height: 100% !important;
+}
+
+.shadow-none {
+    box-shadow: none !important;
+}
+</style>
+{%endblock%}
+{%block maincontent%}
+<div class="container-fluid">
+    <div class="main-body">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="main-breadcrumb ">
+            <ol class="breadcrumb b-bg-c">
+                <li class="breadcrumb-item"><a href="{%url 'index' %}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit An Appointment</li>
+            </ol>
+        </nav>
+        <header>
+            <h2>Edit An Appointment</h2>
+        </header>
+        <!-- /Breadcrumb -->
+        <div class="row gutters-sm">
+            <div class="col">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        {%if request.user.username == objapnmt.patient.username %}
+                        <form method="POST" enctype="multipart/form-data">
+                            {%csrf_token%}
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Patient</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.patient.username}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Health Problem</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.p_h_problem}}
+                                    {% if form.p_h_problem.errors %}
+                                    <small class="help-block-none">{{form.p_h_problem.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Doctor</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.doctor.username}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Appointment Status</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.get_a_status_display}}
+                                </div>
+                            </div>
+                            {%if objapnmt.a_status == '3' or objapnmt.a_status == '4' %}
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Date And Time</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.a_date_time}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Meeting Id</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.a_meeting_id}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Checkup Report</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.checkup_report}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Report</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {%if objapnmt.checkup_report_file %}
+                                    <a href="{{objapnmt.checkup_report_file.url}}">view</a>
+                                    {%endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Prescription</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.d_prescription}}
+                                </div>
+                            </div>
+                            {%endif%}
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-9 text-secondary">
+                                    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Close</a>
+                                    <input type="submit" name="submit" value="submit" class="btn btn-primary">
+                                </div>
+                            </div>
+                        </form>
+                        {%elif request.user.is_hospital_staff %}
+                        <form method="POST" enctype="multipart/form-data">
+                            {%csrf_token%}
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Patient</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.patient.username}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Health Problem</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.p_h_problem}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Doctor</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.doctor.username}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Appointment Status</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.a_status}}
+                                    {% if form.a_status.errors %}
+                                    <small class="help-block-none">{{form.a_status.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Date And Time</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input type="datetime-local" name="a_date_time" class="form-control" id="id_a_date_time" value="{{objapnmt.a_date_time|date:'Y-m-d'}}T{{objapnmt.a_date_time|time:'H:i:s'}}">
+                                    
+                                    {% if form.a_date_time.errors %}
+                                    <small class="help-block-none">{{form.a_date_time.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Meeting Id</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.a_meeting_id}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Checkup Report</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.checkup_report}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Report</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.checkup_report_file}}
+                                    {% if form.checkup_report_file.errors %}
+                                    <small class="help-block-none">{{form.checkup_report_file.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Prescription</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.d_prescription}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-9 text-secondary">
+                                    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Close</a>
+                                    <input type="submit" name="submit" value="submit" class="btn btn-primary">
+                                </div>
+                            </div>
+                        </form>
+                        {%elif request.user.username == objapnmt.doctor.username %}
+                        <form method="POST" enctype="multipart/form-data">
+                            {%csrf_token%}
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Patient</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.patient.username}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Health Problem</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.p_h_problem}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Doctor</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.doctor.username}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Appointment Status</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.a_status}}
+                                    {% if form.a_status.errors %}
+                                    <small class="help-block-none">{{form.a_status.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Date And Time</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input type="datetime-local" name="a_date_time" class="form-control" id="id_a_date_time" value="{{objapnmt.a_date_time|date:'Y-m-d'}}T{{objapnmt.a_date_time|time:'H:i:s'}}">
+                                    {% if form.a_date_time.errors %}
+                                    <small class="help-block-none">{{form.a_date_time.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Meeting Id</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.a_meeting_id}}
+                                    {% if form.a_meeting_id.errors %}
+                                    <small class="help-block-none">{{form.a_meeting_id.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Checkup Report</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.checkup_report}}
+                                    {% if form.checkup_report.errors %}
+                                    <small class="help-block-none">{{form.checkup_report.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Report</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.checkup_report_file}}
+                                    {% if form.checkup_report_file.errors %}
+                                    <small class="help-block-none">{{form.checkup_report_file.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Prescription</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.d_prescription}}
+                                    {% if form.d_prescription.errors %}
+                                    <small class="help-block-none">{{form.d_prescription.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-9 text-secondary">
+                                    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Close</a>
+                                    <input type="submit" name="submit" value="submit" class="btn btn-primary">
+                                </div>
+                            </div>
+                        </form>
+                        {% elif request.user.is_staff %}
+                        <form method="POST" enctype="multipart/form-data">
+                            {%csrf_token%}
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Patient</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.patient.username}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Health Problem</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.p_h_problem}}
+                                    {% if form.p_h_problem.errors %}
+                                    <small class="help-block-none">{{form.p_h_problem.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Doctor</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{objapnmt.doctor.username}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Appointment Status</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.a_status}}
+                                    {% if form.a_status.errors %}
+                                    <small class="help-block-none">{{form.a_status.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Date And Time</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input type="datetime-local" name="a_date_time" class="form-control" id="id_a_date_time" value="{{objapnmt.a_date_time|date:'Y-m-d'}}T{{objapnmt.a_date_time|time:'H:i:s'}}">
+                                    {% if form.a_date_time.errors %}
+                                    <small class="help-block-none">{{form.a_date_time.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Meeting Id</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.a_meeting_id}}
+                                    {% if form.a_meeting_id.errors %}
+                                    <small class="help-block-none">{{form.a_meeting_id.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Checkup Report</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.checkup_report}}
+                                    {% if form.checkup_report.errors %}
+                                    <small class="help-block-none">{{form.checkup_report.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Report</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.checkup_report_file}}
+                                    {% if form.checkup_report_file.errors %}
+                                    <small class="help-block-none">{{form.checkup_report_file.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Prescription</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.d_prescription}}
+                                    {% if form.d_prescription.errors %}
+                                    <small class="help-block-none">{{form.d_prescription.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-9 text-secondary">
+                                    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Close</a>
+                                    <input type="submit" name="submit" value="submit" class="btn btn-primary">
+                                </div>
+                            </div>
+                        </form>
+                        {%endif%}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}

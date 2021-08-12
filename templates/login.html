@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Smart E-Health System For Covid-19 Pandemic</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style type="text/css">
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #17a2b8;
+        height: 100vh;
+    }
+
+    #login .container #login-row #login-column #login-box {
+        margin-top: 100px;
+        border: 1px solid #9C9C9C;
+        background-color: #EAEAEA;
+    }
+
+    #login .container #login-row #login-column #login-box #login-form {
+        padding: 20px;
+    }
+
+    #login .container #login-row #login-column #login-box #login-form #register-link {
+        margin-top: -85px;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="login">
+        <h3 class="text-center text-white pt-5">Smart E-Health System For Covid-19 Pandemic</h3>
+        <div class="container">
+            <div id="login-row" class="row justify-content-center align-items-center">
+                <div id="login-column" class="col-md-6">
+                    <div id="login-box" class="col-md-12">
+                        <form id="login-form" class="form" action="" method="post">
+                            {%csrf_token%}
+                            <h3 class="text-center text-info">Login</h3>
+                            {% if messages %}
+                            {% for message in messages %}
+                            <p>{{ message }}</p>
+                            {% endfor %}
+                            {% endif %}
+                            <div class="form-group">
+                                <label for="loginUsername" class="text-info">Username:</label><br>
+                                <input type="text" name="loginUsername" id="loginUsername" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="loginPassword" class="text-info">Password:</label><br>
+                                <input type="Password" name="loginPassword" id="loginPassword" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" name="submit" class="btn btn-info btn-lg btn-block login-button" value="submit">
+                            </div>
+                            <div class="form-group">
+                                <a href="{% url 'registerpatient' %}" class="text-info">Patients Register here</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

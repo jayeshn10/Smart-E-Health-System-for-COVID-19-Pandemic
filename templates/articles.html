@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{%block blockstyle%}
+<style type="text/css">
+body {
+    background: #eee;
+}
+
+.main-body {
+    padding: 15px;
+}
+
+p {
+    font-size: 14px;
+    color: #777;
+}
+
+.blog .image {
+    height: 250px;
+    overflow: hidden;
+    border-radius: 3px 0 0 3px;
+}
+
+.blog .image img {
+    width: 100%;
+    height: auto;
+}
+
+.blog .date {
+    top: -10px;
+    z-index: 99;
+    width: 65px;
+    right: -10px;
+    height: 65px;
+    padding: 10px;
+    position: absolute;
+    color: #FFFFFF;
+    font-weight: bold;
+    background: #5bc0de;
+    border-radius: 999px;
+}
+
+.blog .blog-details {
+    padding: 0 20px 0 0;
+}
+
+.blog {
+    padding: 0;
+}
+
+.well {
+    border: 0;
+    padding: 20px;
+    min-height: 63px;
+    background: #fff;
+    box-shadow: none;
+    border-radius: 3px;
+    position: relative;
+    max-height: 100000px;
+    border-bottom: 2px solid #ccc;
+}
+
+.blog .blog-details h2 {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.blog .date .blog-number {
+    color: #fff;
+    display: block;
+    font-size: 24px;
+    text-align: center;
+}
+</style>
+{%endblock%}
+{%block maincontent%}
+<div class="container-fluid">
+    <div class="main-body">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="main-breadcrumb ">
+            <ol class="breadcrumb b-bg-c">
+                <li class="breadcrumb-item"><a href="{%url 'index'%}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Articles</li>
+            </ol>
+        </nav>
+        <!-- /Breadcrumb -->
+        <div class="row">
+            <div class="col">
+                <div class="well blog">
+                    <div class="row">
+                        <div class="col-8">
+                            <h3>Health Articles</h3>
+                        </div>
+                        <div class="col-4">{%if request.user.is_staff%}<a class="btn btn-info" href="{%url 'add-articles'%}" style="float: right;">Add Article</a>{%endif%}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            {%for blog in blogs%}
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div class="well blog">
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="image">
+                                <img src="{{blog.blog_img.url}}" alt="">
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <div class="blog-details">
+                                <h2>{{blog.blog_title}}
+                                    {%if request.user.is_staff%}
+                                    <a class="btn btn-info" href="{%url 'edit-articles' blog.id %}" style="float: right;">Edit</a>
+                                     {%endif%}
+                                </h2>
+                               
+                                <p>{{blog.blog_pubdate}}</p>
+                                <p>
+                                    {{blog.blog_desc|striptags|truncatechars:300}}
+                                </p>
+                                <a class="btn btn-info" href="{%url 'single-article' blog.blog_slug %}">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {%endfor%}
+        </div>
+    </div>
+</div>
+{%endblock%}
