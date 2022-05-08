@@ -1,17 +1,30 @@
+import io
+import json
 from datetime import datetime
+from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, HttpResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.forms import formset_factory
+from django.http import HttpResponseRedirect, HttpResponse, FileResponse
 from django.shortcuts import render, redirect
 
 # Create your views here.
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
 from mainapp.decorators import editdetails_authentication
 from mainapp.forms import EditUserDetailsForm, UserChangePasswordCustom, AddBlogForm, EditBlogForm, AddUserForm, \
-    AddAppointment, EditAppointment
+    AddAppointment, EditAppointment, AddCustomePaymentMethodForm, AddOrderForm, AddProductForm, AddProductImageForm, \
+    EditProductForm
 from mainapp.models import User, Blogs, Appointments, PtoSNotification, StoPNotification, StoDNotification, \
-    DtoPNotification
+    DtoPNotification, Products, CartProductInfo, Cart, CustomePaymentMethod, OrderProductInfo, Orders, ProductImage
+
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
+from datetime import datetime
 
 
 def allnotification(request):
@@ -49,7 +62,7 @@ def allnotification(request):
 
 @login_required(login_url='login')
 def home(request):
-    blogs = Blogs.objects.filter(blog_publish=True).order_by('-blog_pubdate')[:5]
+    blogs = Blogs.objects.filter(blog_publish=True).order_by('-blog_pubdate')[:3]
     objnotify = allnotification(request)
 
     context = {
@@ -416,3 +429,256 @@ def registerpatient(request):
             return redirect('login')
     context = {'form': form, }
     return render(request, 'register.html', context)
+
+
+def pharmacy(request):
+    objnotify = allnotification(request)
+    product = Products.objects.all()
+
+    """page = request.GET.get('page', 1)
+
+    paginator = Paginator(product, 6)  # 6 show product per page
+    try:
+        product = paginator.page(page)
+    except PageNotAnInteger:
+        product = paginator.page(1)
+    except EmptyPage:
+        product = paginator.page(paginator.num_pages)"""
+    context = {"products": product, 'objnotify': objnotify}
+    return render(request, 'pharmacy.html', context)
+
+
+def cart(request):
+    objnotify = allnotification(request)
+    if request.method == 'POST':
+        products_cart = request.POST.get('product_cart')
+        products_cart = json.loads(products_cart)
+        if products_cart:
+            cart_obj = Cart.objects.create()
+            final_total = Decimal('0.0')
+            for c_product in products_cart:
+                product_id = c_product
+                product = Products.objects.get(id=product_id)
+                product_qtty = products_cart[c_product][0]
+                single_price = product.product_price
+                total_price = single_price * int(product_qtty)
+                cpi_obj = CartProductInfo.objects.create(product=product, product_quantity=product_qtty,
+                                                         single_product_price=single_price,
+                                                         total_product_price=total_price)
+                cpi_obj.save()
+                cart_obj.products_cart.add(cpi_obj)
+                final_total = final_total + Decimal(total_price)
+            print("okay")
+            cart_obj.cart_total = Decimal(final_total)
+            cart_obj.save()
+            return redirect('checkout', cart_obj.id)
+        else:
+            return redirect('cart')
+
+    context = {'objnotify': objnotify}
+    return render(request, 'cart.html', context)
+
+
+def render_to_pdf(template_src, context_dict={}):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("ISO-8859-1")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None
+
+
+def checkout(request, cartid):
+    objnotify = allnotification(request)
+    cart_obj = Cart.objects.get(id=cartid)
+    form = AddOrderForm()
+    payment_form = AddCustomePaymentMethodForm()
+
+    if request.method == 'POST':
+        form = AddOrderForm(request.POST, request.FILES)
+        payment_form = AddCustomePaymentMethodForm(request.POST, request.FILES)
+        if form.is_valid() and payment_form.is_valid():
+            newform = form.save(commit=False)
+            newpaymentform = payment_form.save(commit=False)
+
+            order_obj = Orders.objects.create(customer_name=newform.customer_name,
+                                              customer_address=newform.customer_address,
+                                              customer_contry=newform.customer_contry,
+                                              customer_state=newform.customer_state,
+                                              customer_city=newform.customer_city,
+                                              city_zip=newform.city_zip,
+                                              customer_email=newform.customer_email,
+                                              customer_mobile_number=newform.customer_mobile_number)
+
+            final_total = Decimal('0.0')
+            for c_product in cart_obj.products_cart.all():
+                product_id = c_product.product.id
+                product = Products.objects.get(id=product_id)
+                oder_prod_info_obj = OrderProductInfo.objects.create(product=product,
+                                                                     product_quantity=c_product.product_quantity,
+                                                                     single_product_price=c_product.single_product_price,
+                                                                     total_product_price=c_product.total_product_price)
+                oder_prod_info_obj.save()
+                order_obj.products.add(oder_prod_info_obj)
+                final_total = final_total + c_product.total_product_price
+
+            order_obj.order_status = "1"
+            order_obj.order_payment_type = "3"
+            order_obj.order_payment_status = "2"
+            order_obj.total_order_price = final_total
+
+            order_payment = CustomePaymentMethod.objects.create(upi_transaction_id=newpaymentform.upi_transaction_id,
+                                                                upi_id=newpaymentform.upi_id,
+                                                                payment_proof=newpaymentform.payment_proof)
+            order_payment.save()
+            order_obj.custom_payment_ref = order_payment
+            order_obj.save()
+            """context = {'order_obj': order_obj}
+            pdf = render_to_pdf('pdfbill.html', context)
+            # rendering the template
+            response = HttpResponse(pdf, content_type='application/pdf')
+            filename = str(order_obj.id) + '.pdf'
+            content = 'attachment; filename="%s"' % filename
+            response['Content-Disposition'] = content
+            return response"""
+            context = {"ordersuccess": True, "orderid": order_obj.id, 'objnotify': objnotify}
+            return render(request, 'checkout.html', context)
+            # return FileResponse(buffer, as_attachment=True, filename='hello.pdf')
+
+    context = {"cart_obj": cart_obj, "form": form, "payment_form": payment_form, 'objnotify': objnotify}
+    return render(request, 'checkout.html', context)
+
+def orderbillpdf(request,oid):
+    order_obj = Orders.objects.get(id=oid)
+    context = {'order_obj': order_obj}
+    pdf = render_to_pdf('pdfbill.html', context)
+    # rendering the template
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = str(order_obj.id) + '.pdf'
+    content = 'attachment; filename="%s"' % filename
+    response['Content-Disposition'] = content
+    return response
+
+def ordertracking(request):
+    objnotify = allnotification(request)
+    if request.method == 'POST':
+        orderid = request.POST.get('orderid')
+        emailid = request.POST.get('emailid')
+        context = {}
+        if orderid and emailid:
+            order_obj = Orders.objects.filter(id=orderid, customer_email=emailid)
+            if order_obj:
+                for order_obj in order_obj:
+                    order_obj = order_obj
+                context = {"orderstatus": True, 'order_obj': order_obj}
+            else:
+                context = {"orderstatus": False}
+        else:
+            context = {"orderstatus": False}
+
+        return render(request, 'ordertrackingdetails.html', context)
+
+    context = {'objnotify': objnotify}
+    return render(request, 'ordertracking.html', context)
+
+
+def pharmacy_single_product(request, slug):
+    objnotify = allnotification(request)
+    product = Products.objects.get(product_slug=slug)
+
+    context = {"product": product, 'objnotify': objnotify}
+    return render(request, 'pharmacy_single_product.html', context)
+
+
+def pharmacy_add_product(request):
+    objnotify = allnotification(request)
+
+    form = AddProductForm()
+
+    addproductformset = formset_factory(AddProductImageForm)
+    productimgtf = {
+        'productimg-TOTAL_FORMS': '0',
+        'productimg-INITIAL_FORMS': '0',
+        'productimg-MIN_NUM_FORMS': '0',
+    }
+    productformset = addproductformset(productimgtf, prefix='productimg')
+
+    if request.method == 'POST':
+        form = AddProductForm(request.POST, request.FILES)
+        productformset = addproductformset(request.POST, request.FILES, prefix='productimg')
+        if form.is_valid():
+            newform = form.save(commit=False)
+            newform.save()
+
+            print(productformset.is_valid)
+            if productformset.is_valid():
+                print('ok')
+                for product_add_form in productformset:
+                    prod_img = product_add_form.cleaned_data.get("product_images")
+                    prod_img_obj = ProductImage.objects.create(product=newform, product_images=prod_img)
+                    prod_img_obj.save()
+
+            return redirect('pharmacy')
+    context = {'form': form, 'objnotify': objnotify, 'productformset': productformset, }
+    return render(request, 'add_product_pharmacy.html', context)
+
+
+def pharmacy_edit_product(request, epid):
+    objnotify = allnotification(request)
+    product = Products.objects.get(id=epid)
+
+    form = EditProductForm(instance=product)
+
+    """editproductformset = formset_factory(AddProductImageForm)
+    productimgtf = {
+        'productimg-TOTAL_FORMS': '0',
+        'productimg-INITIAL_FORMS': '0',
+        'productimg-MIN_NUM_FORMS': '0',
+    }
+
+    print('ddd',product.productimage_set.all().count())
+    productimgtf = {'productimg-TOTAL_FORMS': str(product.productimage_set.all().count()),
+                     'productimg-INITIAL_FORMS': '0',
+                     'productimg-MIN_NUM_FORMS': '0', }
+    num = 0
+    pi = ProductImage.objects.filter(product=product)
+    for l in pi:
+        print('aa',l)
+        productimgtf['productimg-' + str(num) + '-product_images'] = l
+        num = num + 1
+    productformset = editproductformset(productimgtf,prefix='productimg')"""
+    if request.method == 'POST':
+        form = EditProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            newform = form.save(commit=False)
+            product.product_title = newform.product_title
+            product.product_title = newform.product_title
+            product.product_price = newform.product_price
+            product.product_desc = newform.product_desc
+            product.product_count = newform.product_count
+
+            if not newform.product_img == 'emptyfile':
+                product.product_img = newform.product_img
+
+            product.save()
+
+            """productformset = editproductformset(request.POST, request.FILES, prefix='productimg')
+            print(productformset.is_valid)
+            if productformset.is_valid():
+                print('ok')
+                ProductImage.objects.filter(product__id=product.id).delete()
+                for product_add_form in productformset:
+                    prod_img = product_add_form.cleaned_data.get("product_images")
+                    prod_img_obj = ProductImage.objects.create(product=newform, product_images=prod_img)
+                    prod_img_obj.save()"""
+
+            return redirect('pharmacy')
+    context = {'form': form, 'objnotify': objnotify, }
+    return render(request, 'edit_product_pharmacy.html', context)
+
+
+def bill(request):
+    order_obj = Orders.objects.get(id=17)
+    context = {"orderstatus": True, 'order_obj': order_obj}
+    return render(request, 'pdfbill.html', context)

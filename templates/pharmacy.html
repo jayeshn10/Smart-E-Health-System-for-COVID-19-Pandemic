@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{%block blockstyle%}
+<style type="text/css">
+body {
+    background: #eee;
+}
+
+.main-body {
+    padding: 15px;
+}
+
+p {
+    font-size: 14px;
+    color: #777;
+}
+</style>
+{%endblock%}
+{%block maincontent%}
+<div class="container-fluid">
+    <div class="main-body">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="main-breadcrumb ">
+            <ol class="breadcrumb b-bg-c">
+                <li class="breadcrumb-item active" aria-current="page">Home / Pharmacy</li>
+            </ol>
+        </nav>
+        <!---->
+         <header>
+            <h2>Pharmacy  {%if request.user.is_staff%}<a class="btn btn-info" href="{%url 'pharmacy_add_product'%}" style="float: right;">Add Product</a>{%endif%}</h2>
+           
+        </header>
+        <section>
+            <div class="container-fluid">
+                <div class="row">
+                    {% for product in products %}
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 p-3">
+                        <div class="card">
+                            <a href="{% url 'pharmacy_single_product' product.product_slug %}" id="myurl{{product.id}}">
+                                <img class="card-img img-fluid" id="imgsrc{{product.id}}" src="{{product.product_img.url}}" alt="Vans" style="height: 250px;">
+                            </a>
+                            <div class="card-body">
+                                <h4 class="card-title" id="name{{product.id}}">{{product.product_title}}</h4>
+                                <p class="card-text">{{product.product_desc|truncatechars:80}}</p>
+                                <div class="options d-flex flex-fill">
+                                    <div class="price text-success">
+                                        <h5 class="mt-4">Price: ₹<span id="price{{product.id}}">{{product.product_price }}</span></h5>
+                                    </div>
+                                </div>
+                                <div class="buy d-flex justify-content-between align-items-center">
+                                    <a href="{%url 'cart'%}" class="btn-sm btn-info mt-3"><i class="fa fa-shopping-cart"></i> View Cart</a>
+                                   
+                                        <button id="{{product.id}}" class="btn-sm btn-info cart mt-3">Add to Cart</button>
+                                        {%if request.user.is_staff%}
+                                         <a href="{%url 'pharmacy_edit_product' product.id %}" class="btn-sm btn-info mt-3">Edit</a>
+                                         {%endif%}
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {%endfor%}
+                </div><!-- End of div row -->
+            </div>
+            <!---
+            <div class="container col-sm-10 col-sm-offset-1 page">
+                <div class="col-sm-12">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            <li class="disabled">
+                                <a href="#" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="active"><a href="#">1</a></li>
+                            <li><a href="#">2</a></li>
+                            <li><a href="#">3</a></li>
+                            <li><a href="#">4</a></li>
+                            <li><a href="#">5</a></li>
+                            <li><a href="#">6</a></li>
+                            <li><a href="#">7</a></li>
+                            <li><a href="#">8</a></li>
+                            <li>
+                                <a href="#" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>--->
+        </section>
+    </div>
+</div>
+{%endblock%}

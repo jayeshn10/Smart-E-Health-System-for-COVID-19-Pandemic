@@ -3,7 +3,8 @@ from django.contrib import admin
 # Register your models here.
 from mainapp.forms import ChangeUserAdminForm, CreateUserAdminForm
 from mainapp.models import User, Blogs, Appointments, PtoSNotification, StoPNotification, StoDNotification, \
-    DtoPNotification
+    DtoPNotification, ProductImage, Products, OrderProductInfo, CustomePaymentMethod, Orders, CartProductInfo, Cart, \
+    CourierDetail
 
 
 @admin.register(User)
@@ -27,3 +28,29 @@ admin.site.register(StoPNotification)
 admin.site.register(StoDNotification)
 admin.site.register(DtoPNotification)
 
+
+class ProductImageAdmin(admin.StackedInline):
+    model = ProductImage
+
+
+@admin.register(Products)
+class ProductAdmin(admin.ModelAdmin):
+
+
+    inlines = [ProductImageAdmin]
+    list_per_page = 10
+    ordering = ['id']
+
+    list_display = ('product_title',)
+
+    class Meta:
+        model = Products
+
+
+
+admin.site.register(OrderProductInfo)
+admin.site.register(CustomePaymentMethod)
+admin.site.register(Orders)
+admin.site.register(CartProductInfo)
+admin.site.register(Cart)
+admin.site.register(CourierDetail)

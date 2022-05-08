@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{%block blockstyle%}
+<style type="text/css">
+body {
+    color: #1a202c;
+    text-align: left;
+    background-color: #e2e8f0;
+}
+
+.main-body {
+    padding: 15px;
+}
+
+.card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px 0 rgba(0, 0, 0, .06);
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 0 solid rgba(0, 0, 0, .125);
+    border-radius: .25rem;
+}
+
+.card-body {
+    flex: 1 1 auto;
+    min-height: 1px;
+    padding: 1rem;
+}
+
+.gutters-sm {
+    margin-right: -8px;
+    margin-left: -8px;
+}
+
+.gutters-sm>.col,
+.gutters-sm>[class*=col-] {
+    padding-right: 8px;
+    padding-left: 8px;
+}
+
+.mb-3,
+.my-3 {
+    margin-bottom: 1rem !important;
+}
+
+.bg-gray-300 {
+    background-color: #e2e8f0;
+}
+
+.h-100 {
+    height: 100% !important;
+}
+
+.shadow-none {
+    box-shadow: none !important;
+}
+</style>
+{%endblock%}
+{%block maincontent%}
+<div class="container-fluid">
+    <div class="main-body">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="main-breadcrumb ">
+            <ol class="breadcrumb b-bg-c">
+                <li class="breadcrumb-item"><a href="{%url 'index' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{%url 'pharmacy' %}">Pharmacy</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit Product</li>
+            </ol>
+        </nav>
+        <header>
+            <h2>Edit Product</h2>
+        </header>
+        <!-- /Breadcrumb -->
+        <div class="row gutters-sm">
+            <div class="col">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data">
+                            {%csrf_token%}
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Product Title</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.product_title}}
+                                    {% if form.product_title.errors %}
+                                    <small class="help-block-none">{{form.product_title.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Product Price</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.product_price}}
+                                    {% if form.product_price.errors %}
+                                    <small class="help-block-none">{{form.product_price.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Product Stock</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.product_count}}
+                                    {% if form.product_count.errors %}
+                                    <small class="help-block-none">{{form.product_count.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Image</h6>
+                                    <!---
+                                    <span class="input-group-append my-3">
+                                        <button id="add_cmpt" type="submit" class="btn-sm btn-info btn-flat"><i class="fa fa-plus"></i></button>
+                                        <button id="delete_cmpt" type="submit" class="btn-sm btn-info btn-flat ml-1"><i class="fa fa-minus"></i></button>
+                                    </span>--->
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.product_img}}
+                                    {% if form.product_img.errors %}
+                                    <small class="help-block-none">{{form.product_img.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Description</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    {{form.product_desc}}
+                                    {% if form.product_desc.errors %}
+                                    <small class="help-block-none">{{form.product_desc.errors}}</small>
+                                    {% endif%}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-9 text-secondary">
+                                    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Close</a>
+                                    <input type="submit" name="submit" value="submit" class="btn btn-primary">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    //competitiors name in python done
+$(document).on("click", "#add_cmpt", function(e) {
+    e.preventDefault();
+    let total_numb_form = $('#id_productimg-TOTAL_FORMS').val();
+    total_numb_form = parseInt(total_numb_form)
+    let cmptform_num = total_numb_form
+        $('#formset_add_list').append('<input type="file" class="form-control-file my-2" name="productimg-' + cmptform_num + '-product_images" />');
+        $('#id_productimg-TOTAL_FORMS').val(total_numb_form + 1);
+});
+
+$('#delete_cmpt').click(function(e) {
+    e.preventDefault();
+    let cmptform_num = parseInt($('#id_productimg-TOTAL_FORMS').val());
+    $('#formset_add_list').children().last().remove();
+    $("input[id='id_productimg-TOTAL_FORMS']").attr('value', cmptform_num - 1);
+});
+</script>
+{%endblock%}

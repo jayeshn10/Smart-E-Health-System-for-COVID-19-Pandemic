@@ -30,7 +30,20 @@ urlpatterns = [
     path('appointments/<int:eaid>/edit', views.edit_appointment, name='edit_appointment'),
     path('meeting/<int:aidm>/', views.meeting, name='meeting'),
     path('invite-patient', views.invite_patient, name='invite-patient'),
-    path('reset_password/',
+
+    path('pharmacy/', views.pharmacy, name='pharmacy'),
+    path('pharmacy/<slug:slug>/', views.pharmacy_single_product, name='pharmacy_single_product'),
+    path('pharmacy/product/add', views.pharmacy_add_product, name='pharmacy_add_product'),
+    path('pharmacy/product/Edit/<int:epid>', views.pharmacy_edit_product, name='pharmacy_edit_product'),
+    path('cart/', views.cart, name='cart'),
+    path('checkout/<int:cartid>', views.checkout, name='checkout'),
+    path('ordertracking/', views.ordertracking, name='ordertracking'),
+    path('orderbillpdf/<int:oid>/', views.orderbillpdf, name='orderbillpdf'),
+    path('bill/', views.bill, name='bill'),
+
+]
+
+""" path('reset_password/',
          auth_views.PasswordResetView.as_view(),
          name="reset_password"),
 
@@ -45,5 +58,4 @@ urlpatterns = [
     path('reset_password_complete/',
          auth_views.PasswordResetCompleteView.as_view(),
          name="password_reset_complete"),
-
-]
+"""
